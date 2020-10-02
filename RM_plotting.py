@@ -65,6 +65,58 @@ def phi(location=None):
         return json.load(f)['phiPeakPIfit_rm2']
     
     
+def title_gen(location, get_title=False):
+    '''
+    Generates title based on input path.
+    
+    Input:
+    get_title = False (title from location str), 
+    True (paths to stokes I image from FDF_name), 
+    or is the path to the stokes I image. 
+    
+    Output:
+    str in either full J(ra,dec) name or J(ra,dec)(px,py) format
+    '''
+    s_path=path.Path(location)
+    base_nam=s_path.split(".")[0]
+    FDF_name=f'{base_nam}_FDFclean.dat'
+    
+    if get_title != False:
+        if get_title == True:
+            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
+        else:
+            image_path=get_title
+        h=fits.getheader(image_path)
+        w=WCS(h)
+        if len(path.Path(FDF_name).name.split('_')) == 5:
+            pixx=int(path.Path(FDF_name).name.split('_')[2])
+            pixy=int(path.Path(FDF_name).name.split('_')[3])
+            posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
+                #print(np.asarray(posies))
+        else:
+            pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
+            pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
+            posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
+                #print(np.asarray(posies))
+        s_pos=np.asarray(posies)
+        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =1, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
+        title_name='J{0}{1}'.format(s_ra,s_dec)
+        
+    if get_title==False:
+        s_ra=s_path.name.split("_")[0]
+        s_dec=s_path.name.split("_")[1]
+        s_px=s_path.name.split("_")[2]
+        s_py=s_path.name.split("_")[3].split(".")[0]
+        if '+' in s_path.name:
+            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+        else:
+            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
+            
+    return title_name
+    
+    
 def stokes_plot(location):
     '''
     Plots suite of stokes parameters
@@ -140,38 +192,7 @@ def FDF_plot(location, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
     
-    if get_title != False:
-        if get_title == True:
-            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
-        else:
-            image_path=get_title
-        h=fits.getheader(image_path)
-        w=WCS(h)
-        if len(path.Path(FDF_name).name.split('_')) == 5:
-                pixx=int(path.Path(FDF_name).name.split('_')[2])
-                pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        else:
-                pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
-                pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        s_pos=np.asarray(posies)
-        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =1, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
-        title_name='J{0}{1}'.format(s_ra,s_dec)
-    
-    if get_title==False:
-        s_ra=s_path.name.split("_")[0]
-        s_dec=s_path.name.split("_")[1]
-        s_px=s_path.name.split("_")[2]
-        s_py=s_path.name.split("_")[3].split(".")[0]
-        if '+' in s_path.name:
-            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
-        else:
-            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
+    title_name=title_gen(location, get_title=get_title)
     
     #loadin data
     cl_phis=cl_data[:,0]
@@ -248,38 +269,7 @@ def full_plot(location, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
   
-    if get_title != False:
-        if get_title == True:
-            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
-        else:
-            image_path=get_title
-        h=fits.getheader(image_path)
-        w=WCS(h)
-        if len(path.Path(FDF_name).name.split('_')) == 5:
-                pixx=int(path.Path(FDF_name).name.split('_')[2])
-                pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        else:
-                pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
-                pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        s_pos=np.asarray(posies)
-        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =1, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
-        title_name='J{0}{1}'.format(s_ra,s_dec)
-    
-    if get_title==False:
-        s_ra=s_path.name.split("_")[0]
-        s_dec=s_path.name.split("_")[1]
-        s_px=s_path.name.split("_")[2]
-        s_py=s_path.name.split("_")[3].split(".")[0]
-        if '+' in s_path.name:
-            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
-        else:
-            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
+    title_name=title_gen(location, get_title=get_title)
     
     #loadin data
     cl_phis=cl_data[:,0]
@@ -383,38 +373,7 @@ def QU_plot(location,QU_dict, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
   
-    if get_title != False:
-        if get_title == True:
-            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
-        else:
-            image_path=get_title
-        h=fits.getheader(image_path)
-        w=WCS(h)
-        if len(path.Path(FDF_name).name.split('_')) == 5:
-                pixx=int(path.Path(FDF_name).name.split('_')[2])
-                pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        else:
-                pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
-                pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
-                #print(np.asarray(posies))
-        s_pos=np.asarray(posies)
-        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision=1, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
-        title_name='J{0}{1}'.format(s_ra,s_dec)
-    
-    if get_title==False:
-        s_ra=s_path.name.split("_")[0]
-        s_dec=s_path.name.split("_")[1]
-        s_px=s_path.name.split("_")[2]
-        s_py=s_path.name.split("_")[3].split(".")[0]
-        if '+' in s_path.name:
-            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
-        else:
-            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
+    title_name=title_gen(location, get_title=get_title)
     
     #print(total_dictionaries[i])
     read_dictionary = np.load(QU_dict,allow_pickle='TRUE').item()

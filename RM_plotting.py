@@ -150,17 +150,17 @@ def FDF_plot(location, get_title=False):
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])
                 pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         else:
                 pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
                 pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         s_pos=np.asarray(posies)
         cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =1, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
         title_name='J{0}{1}'.format(s_ra,s_dec)
     
     if get_title==False:
@@ -258,17 +258,17 @@ def full_plot(location, get_title=False):
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])
                 pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         else:
                 pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
                 pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         s_pos=np.asarray(posies)
         cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =1, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
         title_name='J{0}{1}'.format(s_ra,s_dec)
     
     if get_title==False:
@@ -393,17 +393,17 @@ def QU_plot(location,QU_dict, get_title=False):
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])
                 pixy=int(path.Path(FDF_name).name.split('_')[3])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         else:
                 pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
                 pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                posies=[w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[0],w.wcs_pix2world(pixx,pixy,*[0]*(h['NAXIS']-1))[1]]
                 #print(np.asarray(posies))
         s_pos=np.asarray(posies)
         cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
-        s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision=1, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
         title_name='J{0}{1}'.format(s_ra,s_dec)
     
     if get_title==False:

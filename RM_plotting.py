@@ -117,7 +117,7 @@ def stokes_plot(location):
     ax5.set_ylabel('Stokes u')
     fig.tight_layout()
     
-def FDF_plot(location):
+def FDF_plot(location, get_title=False):
     '''
     Plots FDF of a source
     
@@ -137,8 +137,7 @@ def FDF_plot(location):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
     
-    if 
-      
+    if get_title==True:
         h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
         w=WCS(h)
         if len(path.Path(FDF_name).name.split('_')) == 5:
@@ -156,6 +155,16 @@ def FDF_plot(location):
         s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
         s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
         title_name='J{0}{1}'.format(s_ra,s_dec)
+    
+    if get_title==False:
+        s_ra=s_path.name.split("_")[0]
+        s_dec=s_path.name.split("_")[1]
+        s_px=s_path.name.split("_")[2]
+        s_py=s_path.name.split("_")[3].split(".")[0]
+        if '+' in s_path.name:
+            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+        else:
+            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
     
     #loadin data
     cl_phis=cl_data[:,0]
@@ -229,23 +238,34 @@ def full_plot(location):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
   
-    h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
-    w=WCS(h)
-    if len(path.Path(FDF_name).name.split('_')) == 5:
-            pixx=int(path.Path(FDF_name).name.split('_')[2])
-            pixy=int(path.Path(FDF_name).name.split('_')[3])
-            posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
-            #print(np.asarray(posies))
-    else:
-            pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
-            pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
-            posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
-            #print(np.asarray(posies))
-    s_pos=np.asarray(posies)
-    cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
-    s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
-    s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
-    title_name='J{0}{1}'.format(s_ra,s_dec)
+    if get_title==True:
+        h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
+        w=WCS(h)
+        if len(path.Path(FDF_name).name.split('_')) == 5:
+                pixx=int(path.Path(FDF_name).name.split('_')[2])
+                pixy=int(path.Path(FDF_name).name.split('_')[3])
+                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                #print(np.asarray(posies))
+        else:
+                pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
+                pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
+                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                #print(np.asarray(posies))
+        s_pos=np.asarray(posies)
+        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
+        title_name='J{0}{1}'.format(s_ra,s_dec)
+    
+    if get_title==False:
+        s_ra=s_path.name.split("_")[0]
+        s_dec=s_path.name.split("_")[1]
+        s_px=s_path.name.split("_")[2]
+        s_py=s_path.name.split("_")[3].split(".")[0]
+        if '+' in s_path.name:
+            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+        else:
+            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
     
     #loadin data
     cl_phis=cl_data[:,0]
@@ -341,6 +361,39 @@ def QU_plot(location,QU_dict):
     rmsf_data=np.loadtxt(f'{base_nam}_RMSF.dat')
     snr_r=snr(f'{base_nam}_RMclean.json')
     phi_r=phi(f'{base_nam}_RMclean.json')
+    snr_r=snr(f'{base_nam}_RMclean.json')
+    phi_r=phi(f'{base_nam}_RMclean.json')
+    fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
+    FDF_name=f'{base_nam}_FDFclean.dat'
+  
+    if get_title==True:
+        h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
+        w=WCS(h)
+        if len(path.Path(FDF_name).name.split('_')) == 5:
+                pixx=int(path.Path(FDF_name).name.split('_')[2])
+                pixy=int(path.Path(FDF_name).name.split('_')[3])
+                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                #print(np.asarray(posies))
+        else:
+                pixx=int(path.Path(FDF_name).name.split('F')[0].split('-')[-2])
+                pixy=int(path.Path(FDF_name).name.split('F')[0].split('-')[-1][:-1])
+                posies=[w.wcs_pix2world(pixx,pixy,0,0)[0],w.wcs_pix2world(pixx,pixy,0,0)[1]]
+                #print(np.asarray(posies))
+        s_pos=np.asarray(posies)
+        cat=SkyCoord(s_pos[0],s_pos[1],unit='deg')
+        s_ra=cat.ra.to_string(unit=u.hourangle, sep='', precision =2, pad=True)
+        s_dec=cat.dec.to_string(sep='', precision=2, alwayssign=True, pad=True)
+        title_name='J{0}{1}'.format(s_ra,s_dec)
+    
+    if get_title==False:
+        s_ra=s_path.name.split("_")[0]
+        s_dec=s_path.name.split("_")[1]
+        s_px=s_path.name.split("_")[2]
+        s_py=s_path.name.split("_")[3].split(".")[0]
+        if '+' in s_path.name:
+            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+        else:
+            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
     
     #print(total_dictionaries[i])
     read_dictionary = np.load(QU_dict,allow_pickle='TRUE').item()
@@ -381,7 +434,7 @@ def QU_plot(location,QU_dict):
     #plotting
     fig = plt.figure(figsize=(15,15))
     ax1 = plt.subplot(411)
-    ax1.set_title(f'{s_path.name}')
+    ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]')
     ax1.plot(cl_phis,cl_total,label='FDFclean',zorder=3,color='blue')
     ax1.plot(di_phis,di_total,label='FDFdirty',color='orange')
     ax1.plot(rmsf_phis+phi_r,rmsf_total*np.max(cl_total),label='RMSF',color='green')

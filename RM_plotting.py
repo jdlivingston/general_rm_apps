@@ -123,6 +123,9 @@ def FDF_plot(location, get_title=False):
     
     Input:
     location = path where the stokes information file is (single path with .dat)
+    get_title = False (title from location str), 
+    True (paths to stokes I image from FDF_name), 
+    or is the path to the stokes I image. 
     
     Ouput:
     Plot 1 = FDF of source
@@ -137,8 +140,12 @@ def FDF_plot(location, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
     
-    if get_title==True:
-        h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
+    if get_title != False:
+        if get_title == True:
+            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
+        else:
+            image_path=get_title
+        h=fits.getheader(image_path)
         w=WCS(h)
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])
@@ -210,6 +217,9 @@ def full_plot(location, get_title=False):
     
     Input:
     location = path where the stokes information file is (single path with .dat)
+    get_title = False (title from location str), 
+    True (paths to stokes I image from FDF_name), 
+    or is the path to the stokes I image. 
     
     Ouput:
     Plot 1 = FDF of source
@@ -238,8 +248,12 @@ def full_plot(location, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
   
-    if get_title==True:
-        h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
+    if get_title != False:
+        if get_title == True:
+            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
+        else:
+            image_path=get_title
+        h=fits.getheader(image_path)
         w=WCS(h)
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])
@@ -336,6 +350,9 @@ def QU_plot(location,QU_dict, get_title=False):
     Input:
     location = path where the stokes information file is (single path with .dat)
     QU_dict = path where the sources's best fitting model is located (limited to m2 and m4 models)
+    get_title = False (title from location str), 
+    True (paths to stokes I image from FDF_name), 
+    or is the path to the stokes I image. 
     
     Ouput:
     Plot 1 = FDF of source
@@ -366,8 +383,12 @@ def QU_plot(location,QU_dict, get_title=False):
     fwhm_r=fwhm(f'{base_nam}_RMsynth.json')
     FDF_name=f'{base_nam}_FDFclean.dat'
   
-    if get_title==True:
-        h=fits.getheader(f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits')
+    if get_title != False:
+        if get_title == True:
+            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
+        else:
+            image_path=get_title
+        h=fits.getheader(image_path)
         w=WCS(h)
         if len(path.Path(FDF_name).name.split('_')) == 5:
                 pixx=int(path.Path(FDF_name).name.split('_')[2])

@@ -204,7 +204,7 @@ def FDF_plot(location, get_title=False):
     ax1.legend()
     fig.tight_layout()
     
-def full_plot(location):
+def full_plot(location, get_title=False):
     '''
     Plots suite of stokes parameters and FDF of a source
     
@@ -329,7 +329,7 @@ def full_plot(location):
     ax5.set_ylabel('Stokes u')
     fig.tight_layout()
     
-def QU_plot(location,QU_dict):
+def QU_plot(location,QU_dict, get_title=False):
     '''
     Plots suite of stokes parameters and FDF of a source with QU fitted parameters
     

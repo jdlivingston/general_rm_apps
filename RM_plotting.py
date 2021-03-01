@@ -8,17 +8,23 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.wcs import WCS
 import astropy.units as u
+plt.rcParams.update({'font.size': 17})
 
-modeltypes={2:'1 Screen with EFD',
+modeltypes={1:'1 Screen (thin)',
+            2:'1 Screen with EFD',
             3:'1 Screen with EFD and IFD',
-            4:'2 Screens with different EFD',
+            4:'2 Screens with EFD',
             5:'2 Screens with EFD and IFD',
-            6:'3 Screens'}
+            6:'2 Screens (thin)',
+            7:'2 Screens with same EFD',
+            9:'1 Screen with IFD',
+           10:'2 Screens with IFD',
+           14:'2 Screens, 1 Screen with EFD and IFD'}
 
 # Collects all the models I want which in this case are m2 and m4
 qumodels = {}
 import importlib.util
-for m in [2,3,4,5,6]:
+for m in [1,2,3,4,5,6,7,9,10,14]:
     spec = importlib.util.spec_from_file_location(f"qumodels.m{m}",
                                                   f"/home/jackl/RM/RMtools_1D/models_ns/m{m}.py")
     m2 = importlib.util.module_from_spec(spec)
@@ -81,11 +87,10 @@ def title_gen(location, get_title=False):
     base_nam=s_path.split(".")[0]
     FDF_name=f'{base_nam}_FDFclean.dat'
     
-    if get_title != False:
-        if get_title == True:
-            image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
-        else:
-            image_path=get_title
+    if get_title == True:
+        image_path=f'{path.Path(FDF_name).parent.parent}/{path.Path(FDF_name).parent.parent.name}.i.smooth.fits'
+#         else:
+#             image_path=get_title
         h=fits.getheader(image_path)
         w=WCS(h)
         if len(path.Path(FDF_name).name.split('_')) == 5:
@@ -104,15 +109,21 @@ def title_gen(location, get_title=False):
         s_dec=cat.dec.to_string(sep='', precision=1, alwayssign=True, pad=True)
         title_name='J{0}{1}'.format(s_ra,s_dec)
         
-    if get_title==False:
-        s_ra=s_path.name.split("_")[0]
-        s_dec=s_path.name.split("_")[1]
-        s_px=s_path.name.split("_")[2]
-        s_py=s_path.name.split("_")[3].split(".")[0]
-        if '+' in s_path.name:
-            title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+    elif get_title==False:
+        if "_" in s_path.name:
+            s_ra=s_path.name.split("_")[0]
+            s_dec=s_path.name.split("_")[1]
+            s_px=s_path.name.split("_")[2]
+            s_py=s_path.name.split("_")[3].split(".")[0]
+            if '+' in s_path.name:
+                title_name=f'J{s_ra}+{s_dec} (px = {s_px}, py = {s_py})'
+            else:
+                title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
         else:
-            title_name=f'J{s_ra}-{s_dec} (px = {s_px}, py = {s_py})'
+            title_name=s_path.name
+    
+    elif type(get_title) is str:
+        title_name=f'{get_title}'
             
     return title_name
     
@@ -164,7 +175,8 @@ def stokes_plot(location):
     ax4.set_ylim(-90,90)
     
     ax5 = plt.subplot(426)
-    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3)
+    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3,
+                vmin=min(lamsq),vmax=max(lamsq))
     ax5.set_xlabel('Stokes q')
     ax5.set_ylabel('Stokes u')
     fig.tight_layout()
@@ -295,9 +307,9 @@ def full_plot(location, get_title=False):
     peaks, _ = find_peaks(cl_total, height=cutoff)
     
     #plotting
-    fig = plt.figure(figsize=(15,15))
+    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*4.5),dpi=200)
     ax1 = plt.subplot(411)
-    ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]')
+    ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]',fontsize=17)
     ax1.plot(cl_phis,cl_total,label='F($\phi$) clean',zorder=3,color='blue')
     ax1.plot(di_phis,di_total,label='F($\phi$) dirty',color='orange')
     ax1.plot(rmsf_phis+phi_r,rmsf_total*np.max(cl_total),label='RMSF',color='green')
@@ -306,6 +318,7 @@ def full_plot(location, get_title=False):
     ax1.set_xlabel('$\phi\,[\,\mathrm{rad}\,\mathrm{m}^{-2}]$')
     ax1.set_ylabel('|F($\phi$)|')
     ax1.set_xlim(min(cl_phis),max(cl_phis))
+    ax1.set_ylim(0,max(cl_total)*1.1)
     ax1.legend()
     
     ax2 = plt.subplot(412)
@@ -328,9 +341,15 @@ def full_plot(location, get_title=False):
     ax4.set_ylim(-90,90)
     
     ax5 = plt.subplot(426)
-    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3)
+    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3,
+                vmin=min(lamsq),vmax=max(lamsq))
     ax5.set_xlabel('Stokes q')
     ax5.set_ylabel('Stokes u')
+    ax1.grid()
+    ax2.grid()
+    ax3.grid()
+    ax4.grid()
+    ax5.grid()
     fig.tight_layout()
     
 def QU_plot(location,QU_dict, get_title=False):
@@ -375,17 +394,14 @@ def QU_plot(location,QU_dict, get_title=False):
   
     title_name=title_gen(location, get_title=get_title)
     
-    #print(total_dictionaries[i])
     read_dictionary = np.load(QU_dict,allow_pickle='TRUE').item()
     mod_number=int(list(read_dictionary.keys())[0].split('m')[-1])
     modq=qumodels[mod_number].model(list(read_dictionary.values())[0],lamsq).real
     modu=qumodels[mod_number].model(list(read_dictionary.values())[0],lamsq).imag
-    
-    if mod_number == 2:
+
+    if '1 Screen' in modeltypes[mod_number]:
         RM_radm2=list(read_dictionary.values())[0]['RM_radm2']
-    if mod_number == 4:
-        RM_radm2=[list(read_dictionary.values())[0]['RM1_radm2'],list(read_dictionary.values())[0]['RM2_radm2']]
-    if mod_number == 6:
+    if '2 Screens' in modeltypes[mod_number]:
         RM_radm2=[list(read_dictionary.values())[0]['RM1_radm2'],list(read_dictionary.values())[0]['RM2_radm2']]
     
     #loadin data
@@ -414,7 +430,8 @@ def QU_plot(location,QU_dict, get_title=False):
     #plotting
     fig = plt.figure(figsize=(15,15))
     ax1 = plt.subplot(411)
-    ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]')
+    ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]'+
+                     f' {modeltypes[mod_number]}')
     ax1.plot(cl_phis,cl_total,label='FDFclean',zorder=3,color='blue')
     ax1.plot(di_phis,di_total,label='FDFdirty',color='orange')
     ax1.plot(rmsf_phis+phi_r,rmsf_total*np.max(cl_total),label='RMSF',color='green')
@@ -423,23 +440,17 @@ def QU_plot(location,QU_dict, get_title=False):
     ax1.set_xlabel('$\phi\,[\,\mathrm{rad}\,\mathrm{m}^{-2}]$')
     ax1.set_ylabel('|F($\phi$)|')
     ax1.set_xlim(min(cl_phis),max(cl_phis))
+    ax1.set_ylim(0,max(cl_total)*1.1)
     
-    if mod_number == 2:
+    if '1 Screen' in modeltypes[mod_number]:
         ax1.axvline(RM_radm2,color='k',ls='-.',
                          label='$\mathrm{RM}_{1} =$'+f'{RM_radm2:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
-    if mod_number == 4:
+    if '2 Screens' in modeltypes[mod_number]:
         ax1.axvline(RM_radm2[0],color='k',ls='-.',
                          label='$\mathrm{RM}_{1} =$'+f'{RM_radm2[0]:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
         ax1.axvline(RM_radm2[1],color='k',ls='-.',
                          label='$\mathrm{RM}_{2} =$'+f'{RM_radm2[1]:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
         
-    if mod_number == 6:
-        ax1.axvline(RM_radm2[0],color='k',ls='-.',
-                         label='$\mathrm{RM}_{1} =$'+f'{RM_radm2[0]:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
-        ax1.axvline(RM_radm2[1],color='k',ls='-.',
-                         label='$\mathrm{RM}_{2} =$'+f'{RM_radm2[1]:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
-        ax1.axvline(-346.41549683,color='k',ls='-.',
-                         label='$\mathrm{RM}_{2} =$'+f'{-346.41549683:.0f}'+'$\,\mathrm{rad}\,\mathrm{m}^{-2}$')
     
     ax2 = plt.subplot(412)
     ax2.errorbar(freq/1e9,stokes_i,yerr=stokes_v*np.sqrt(2),fmt='.',color='k')
@@ -467,7 +478,8 @@ def QU_plot(location,QU_dict, get_title=False):
                  ,ls='--',color='lime',linewidth=5,zorder=3)
     
     ax5 = plt.subplot(426)
-    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3)
+    ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3,
+                vmin=min(lamsq),vmax=max(lamsq))
     ax5.set_xlabel('Stokes q')
     ax5.set_ylabel('Stokes u')
     

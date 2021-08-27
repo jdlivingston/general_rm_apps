@@ -7,6 +7,15 @@ from scipy import interpolate
 import matplotlib.pyplot as plt
 
 def beam_axes(location):
+    '''
+    Determine the beam axes of a source
+    
+    Args:
+        location ([str]): path to .dat files of Stokes Spectrum
+        
+    Returns:
+        ret ([list]): RA and DEC size of the beam
+    '''
     name = path.Path(location).parent.parent+'/'+path.Path(location).parent.parent.name+'.i.single.fits'
     header = fits.getheader(name)
     beam = Beam.from_fits_header(header)
@@ -17,7 +26,7 @@ def beam_axes(location):
     dec=maj*abs(np.cos(pa))+mino*abs(np.sin(pa))
     return ra,dec
 
-def resolved_check(location,plot=False):
+def det_res(location,plot=False):
     '''
     Checks if a source is resolved by inspecting Stokes I 
     

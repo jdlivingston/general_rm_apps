@@ -8,6 +8,8 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.wcs import WCS
 import astropy.units as u
+from rm_misc import snr,fwhm,phi
+
 plt.rcParams.update({'font.size': 17})
 
 modeltypes={1:'1 Screen (thin)',
@@ -26,54 +28,14 @@ qumodels = {}
 import importlib.util
 for m in [1,2,3,4,5,6,7,9,10,14]:
     spec = importlib.util.spec_from_file_location(f"qumodels.m{m}",
-                                                  f"/home/jackl/RM/RMtools_1D/models_ns/m{m}.py")
+                                                  f"location of RM-tools models")
     m2 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m2)
     qumodels[m] = m2
-
-def snr(location):
-    '''
-    Gets the dictionary of parameters for each model for each object
-    
-    Input:
-    location = path where the model.json file is (single path)
-    
-    Output:
-    results = the model parameters
-    '''
-    with open(location, 'r') as f:
-        return json.load(f)['snrPIfit']
-    
-def fwhm(location):
-    '''
-    Gets the dictionary of parameters for each model for each object
-    
-    Input:
-    location = path where the model.json file is (single path)
-    
-    Output:
-    results = the model parameters
-    '''
-    with open(location, 'r') as f:
-        return json.load(f)['fwhmRMSF']
-    
-def phi(location=None):
-    '''
-    Gets the dictionary of parameters for each model for each object
-    
-    Input:
-    location = path where the model.json file is (single path)
-    
-    Output:
-    results = the model parameters
-    '''
-    with open(location, 'r') as f:
-        return json.load(f)['phiPeakPIfit_rm2']
-    
     
 def title_gen(location, get_title=False):
     '''
-    Generates title based on input path.
+    Generates title based on input path (for use with RM-tools).
     
     Input:
     get_title = False (title from location str), 
@@ -153,7 +115,7 @@ def stokes_plot(location):
     dpsi=np.rad2deg((abs(stokes_v/stokes_q+1j*stokes_v/stokes_u
                  )*(stokes_u/stokes_q))*((stokes_u/stokes_q)**2+1)**-1)
     
-    fig = plt.figure(figsize=(15,15))
+    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*4.5),dpi=200)
     ax2 = plt.subplot(412)
     ax2.set_title(f'{s_path.name}')
     ax2.errorbar(freq/1e9,stokes_i,yerr=stokes_v*np.sqrt(2),fmt='.',color='k')
@@ -161,16 +123,16 @@ def stokes_plot(location):
     ax2.set_ylabel('Stokes I [Jy/beam]')
 
     ax3 = plt.subplot(425)
-    ax3.errorbar(lamsq,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='blue',label='Stokes q')
-    ax3.errorbar(lamsq,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='red',label='Stokes u')
-    ax3.errorbar(lamsq,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
+    ax3.errorbar(lamsq*10000,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='blue',label='Stokes q')
+    ax3.errorbar(lamsq*10000,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='red',label='Stokes u')
+    ax3.errorbar(lamsq*10000,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
                  fmt='.',color='black',label='Stokes p')
     ax3.set_ylabel('Stokes q,u,p [pol. fraction]')
-    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{m}^{2}]$')
+    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{cm}^{2}]$')
     
     ax4 = plt.subplot(414)
-    ax4.errorbar(lamsq,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
-    ax4.set_xlabel('$\lambda^{2} [\mathrm{m}^{2}]$')
+    ax4.errorbar(lamsq*10000,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
+    ax4.set_xlabel('$\lambda^{2} [\mathrm{cm}^{2}]$')
     ax4.set_ylabel('$\chi$ [deg]')
     ax4.set_ylim(-90,90)
     
@@ -179,6 +141,10 @@ def stokes_plot(location):
                 vmin=min(lamsq),vmax=max(lamsq))
     ax5.set_xlabel('Stokes q')
     ax5.set_ylabel('Stokes u')
+    ax2.grid()
+    ax3.grid()
+    ax4.grid()
+    ax5.grid()
     fig.tight_layout()
     
 def FDF_plot(location, get_title=False):
@@ -230,7 +196,7 @@ def FDF_plot(location, get_title=False):
     peaks, _ = find_peaks(cl_total, height=cutoff)
     
     #plotting
-    fig = plt.figure(figsize=(15,15))
+    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*4.5),dpi=200)
     ax1 = plt.subplot(411)
     ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]')
     ax1.plot(cl_phis,cl_total,label='F($\phi$) clean',zorder=3)
@@ -242,6 +208,7 @@ def FDF_plot(location, get_title=False):
     ax1.set_ylabel('|F($\phi$)|')
     ax1.set_xlim(min(cl_phis),max(cl_phis))
     ax1.legend()
+    ax1.grid()
     fig.tight_layout()
     
 def full_plot(location, get_title=False):
@@ -306,9 +273,23 @@ def full_plot(location, get_title=False):
     #peak fitting
     peaks, _ = find_peaks(cl_total, height=cutoff)
     
+    SMALL_SIZE = 12
+    MEDIUM_SIZE = 13
+    BIGGER_SIZE = 16
+
+    plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+    
     #plotting
-    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*4.5),dpi=200)
-    ax1 = plt.subplot(411)
+    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*5.),dpi=200)
+    gs1 = fig.add_gridspec(nrows=4, ncols=3,hspace=.275,wspace=.4)
+    ax1 = fig.add_subplot(gs1[0, :])
+
     ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]',fontsize=17)
     ax1.plot(cl_phis,cl_total,label='F($\phi$) clean',zorder=3,color='blue')
     ax1.plot(di_phis,di_total,label='F($\phi$) dirty',color='orange')
@@ -317,32 +298,54 @@ def full_plot(location, get_title=False):
     ax1.axhline(cutoff,ls='--',color='red',label='7 $\sigma$ cutoff')
     ax1.set_xlabel('$\phi\,[\,\mathrm{rad}\,\mathrm{m}^{-2}]$')
     ax1.set_ylabel('|F($\phi$)|')
+    
+    min_phi=float(np.format_float_positional(min(cl_phis), precision=1, unique=False, fractional=False, trim='k'))
+    max_phi=float(np.format_float_positional(max(cl_phis), precision=1, unique=False, fractional=False, trim='k'))
+    
+    ax1.set_xticks(np.linspace(min_phi,max_phi,11))
+    
+    
     ax1.set_xlim(min(cl_phis),max(cl_phis))
     ax1.set_ylim(0,max(cl_total)*1.1)
     ax1.legend()
     
-    ax2 = plt.subplot(412)
+    ax2 = fig.add_subplot(gs1[1, :])
+    
     ax2.errorbar(freq/1e9,stokes_i,yerr=stokes_v*np.sqrt(2),fmt='.',color='k')
     ax2.set_xlabel('Frequency [GHz]')
     ax2.set_ylabel('Stokes I [Jy/beam]')
 
-    ax3 = plt.subplot(425)
-    ax3.errorbar(lamsq,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='blue',label='Stokes q')
-    ax3.errorbar(lamsq,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='red',label='Stokes u')
-    ax3.errorbar(lamsq,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
+    ax3 = fig.add_subplot(gs1[2, :2])
+    
+    ax3.errorbar(lamsq*10000,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='blue',label='Stokes q')
+    ax3.errorbar(lamsq*10000,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='red',label='Stokes u')
+    ax3.errorbar(lamsq*10000,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
                  fmt='.',color='black',label='Stokes p')
     ax3.set_ylabel('Stokes q,u,p [pol. fraction]')
-    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{m}^{2}]$')
+    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{cm}^{2}]$')
     
-    ax4 = plt.subplot(414)
-    ax4.errorbar(lamsq,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
-    ax4.set_xlabel('$\lambda^{2} [\mathrm{m}^{2}]$')
+    ax4 = fig.add_subplot(gs1[3, :])
+    
+    ax4.errorbar(lamsq*10000,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
+    ax4.set_xlabel('$\lambda^{2} [\mathrm{cm}^{2}]$')
     ax4.set_ylabel('$\chi$ [deg]')
     ax4.set_ylim(-90,90)
     
-    ax5 = plt.subplot(426)
+    ax5 = fig.add_subplot(gs1[2, -1],aspect='equal')
+    
     ax5.scatter(stokes_q/stokes_i,stokes_u/stokes_i,marker='.',c=lamsq,cmap='gist_rainbow',zorder=3,
                 vmin=min(lamsq),vmax=max(lamsq))
+    
+    ax5lim=abs(np.concatenate([stokes_q/stokes_i,stokes_u/stokes_i]))
+    ax5.set_xticks(np.linspace(-max(ax5lim),max(ax5lim),5))
+    ax5.set_yticks(np.linspace(-max(ax5lim),max(ax5lim),5))
+    
+    ax5.set_xticklabels([f'{i:.1g}' for i in np.linspace(-max(ax5lim),max(ax5lim),5)])
+    ax5.set_yticklabels([f'{i:.1g}' for i in np.linspace(-max(ax5lim),max(ax5lim),5)])
+    
+    ax5.set_xlim(-max(ax5lim)*1.1,max(ax5lim)*1.1)
+    ax5.set_ylim(-max(ax5lim)*1.1,max(ax5lim)*1.1)
+    
     ax5.set_xlabel('Stokes q')
     ax5.set_ylabel('Stokes u')
     ax1.grid()
@@ -350,7 +353,10 @@ def full_plot(location, get_title=False):
     ax3.grid()
     ax4.grid()
     ax5.grid()
+    
+    
     fig.tight_layout()
+    
     
 def QU_plot(location,QU_dict, get_title=False):
     '''
@@ -428,7 +434,7 @@ def QU_plot(location,QU_dict, get_title=False):
     peaks, _ = find_peaks(cl_total, height=cutoff)
     
     #plotting
-    fig = plt.figure(figsize=(15,15))
+    fig = plt.figure(figsize=(84*0.0393701*3.5,84*0.0393701*4.5),dpi=200)
     ax1 = plt.subplot(411)
     ax1.set_title(f'{title_name} [RM = {phi_r:.0f} $\pm$ {fwhm_r/snr_r:.0f} '+'$\mathrm{rad}\,\mathrm{m}^{-2}$]'+
                      f' {modeltypes[mod_number]}')
@@ -458,23 +464,23 @@ def QU_plot(location,QU_dict, get_title=False):
     ax2.set_ylabel('Stokes I [Jy/beam]')
 
     ax3 = plt.subplot(425)
-    ax3.errorbar(lamsq,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='dodgerblue',label='Stokes q')
-    ax3.errorbar(lamsq,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='tomato',label='Stokes u')
-    ax3.errorbar(lamsq,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
+    ax3.errorbar(lamsq*10000,stokes_q/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='dodgerblue',label='Stokes q')
+    ax3.errorbar(lamsq*10000,stokes_u/stokes_i,yerr=stokes_v/stokes_i,fmt='.',color='tomato',label='Stokes u')
+    ax3.errorbar(lamsq*10000,abs(stokes_q/stokes_i+1j*stokes_u/stokes_i),yerr=np.sqrt(2)*stokes_v/stokes_i,
                  fmt='.',color='black',label='Stokes p')
     ax3.set_ylabel('Stokes q,u,p [pol. fraction]')
-    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{m}^{2}]$')
+    ax3.set_xlabel('$\lambda^{2}\,[\mathrm{cm}^{2}]$')
     
-    ax3.plot(lamsq,abs(modq+1j*modu),zorder=4,linewidth=5.0,color='lime',ls='--')
-    ax3.plot(lamsq,modu,zorder=3,linewidth=5.0,color='red',ls='--')
-    ax3.plot(lamsq,modq,zorder=3,linewidth=5.0,color='blue',ls='--')
+    ax3.plot(lamsq*10000,abs(modq+1j*modu),zorder=4,linewidth=5.0,color='lime',ls='--')
+    ax3.plot(lamsq*10000,modu,zorder=3,linewidth=5.0,color='red',ls='--')
+    ax3.plot(lamsq*10000,modq,zorder=3,linewidth=5.0,color='blue',ls='--')
     
     ax4 = plt.subplot(414)
-    ax4.errorbar(lamsq,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
-    ax4.set_xlabel('$\lambda^{2} [\mathrm{m}^{2}]$')
+    ax4.errorbar(lamsq*10000,0.5*np.rad2deg(np.arctan(stokes_u/stokes_q)),yerr=dpsi,fmt='.',color='black',label='$\chi$');
+    ax4.set_xlabel('$\lambda^{2} [\mathrm{cm}^{2}]$')
     ax4.set_ylabel('$\chi$ [deg]')
     ax4.set_ylim(-90,90)
-    ax4.plot(lamsq,0.5*np.rad2deg(np.arctan(modu/modq))
+    ax4.plot(lamsq*10000,0.5*np.rad2deg(np.arctan(modu/modq))
                  ,ls='--',color='lime',linewidth=5,zorder=3)
     
     ax5 = plt.subplot(426)
@@ -484,5 +490,9 @@ def QU_plot(location,QU_dict, get_title=False):
     ax5.set_ylabel('Stokes u')
     
     ax5.plot(modq,modu,zorder=3,ls='--',color='k',linewidth=5)
-    
+    ax1.grid()
+    ax2.grid()
+    ax3.grid()
+    ax4.grid()
+    ax5.grid()
     fig.tight_layout()
